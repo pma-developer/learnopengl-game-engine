@@ -39,8 +39,6 @@ glm::vec2 cursorPosition;
 glm::vec2 cursorDelta;
 float rotationSensitivity = 0.1f;
 
-glm::vec3 diff;
-
 bool mmbPressed = false;
 
 float vertices[] = {
@@ -309,28 +307,13 @@ void update()
     glm::mat4 inputRotationMatrix = glm::mat4(1.);
     inputRotationMatrix = glm::rotate(inputRotationMatrix, glm::radians(cameraOrientation.y), AXIS_RIGHT);
     inputRotationMatrix = glm::rotate(inputRotationMatrix, glm::radians(cameraOrientation.x), AXIS_UP);
-
+    inputRotationMatrix = glm::inverse(inputRotationMatrix);
     glm::vec3 rotatedInputVector = glm::vec3(inputRotationMatrix * glm::vec4(inputVector, 0.0));
 
     glm::vec3 velocity = rotatedInputVector * speed;
-    logNonZeroVector((velocity), "rotated input vector");
-    auto prevCameraPos = cameraPosition;
     cameraPosition += velocity;
 
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::rotate(view, glm::radians(cameraOrientation.y), AXIS_RIGHT);
-    view = glm::rotate(view, glm::radians(cameraOrientation.x), AXIS_UP);
-    auto actualPositionChange = glm::vec3(view * glm::vec4(velocity, 0));
-    diff = actualPositionChange - velocity;
-
-    if (length2(rotatedInputVector) > 0) {
-
-        logVector(actualPositionChange,"actualPositionChange");
-        logVector(actualPositionChange - velocity, "diff");
-    }
     squareShader.use();
-    //squareShader.setMat4("transform", getTransformationMatrix());
-    squareShader.setMat4("transform", glm::mat4(1.0f));
     squareShader.setMat4("view", getViewMatrix());
     squareShader.setMat4("projection", getProjectionMatrix());
 
