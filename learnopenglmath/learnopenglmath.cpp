@@ -16,18 +16,13 @@
 #include <glm/vec3.hpp>
 #include "Shader.h"
 #include "math_utils.h"
-
+#include "camera.h";
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
-const glm::vec3 AXIS_UP(0, 1, 0);
-const glm::vec3 AXIS_FORWARD(0, 0, 1);
-const glm::vec3 AXIS_RIGHT(1, 0, 0);
 int frameIndex = 0;
 GLFWwindow* window;
-
-glm::vec3 cameraPosition;
-glm::vec2 cameraOrientation;
+Camera* mainCamera;
 
 glm::vec2 horizontalInput;
 float verticalInput;
@@ -107,19 +102,6 @@ glm::mat4 getModelMatrix()
     model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
     return model;
-}
-glm::mat4 getViewMatrix()
-{
-    glm::mat4 view = glm::mat4(1.0f);
-
-    view = glm::rotate(view, glm::radians(cameraOrientation.y), AXIS_RIGHT);
-    view = glm::rotate(view, glm::radians(cameraOrientation.x), AXIS_UP);
-    view = glm::translate(view, -cameraPosition);
-    return view;
-}
-glm::mat4 getProjectionMatrix()
-{
-    return glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 }
 
 #pragma region GLFW_CALLBACKS
@@ -299,23 +281,15 @@ void update()
 
     glBindVertexArray(squareVAO1);
 
-
     if (mmbPressed)
     {
-        cameraOrientation += cursorDelta * rotationSensitivity;
+        mainCamera->rotate(cursorDelta*rotationSensitivity);
     }
-    glm::mat4 inputRotationMatrix = glm::mat4(1.);
-    inputRotationMatrix = glm::rotate(inputRotationMatrix, glm::radians(cameraOrientation.y), AXIS_RIGHT);
-    inputRotationMatrix = glm::rotate(inputRotationMatrix, glm::radians(cameraOrientation.x), AXIS_UP);
-    inputRotationMatrix = glm::inverse(inputRotationMatrix);
-    glm::vec3 rotatedInputVector = glm::vec3(inputRotationMatrix * glm::vec4(inputVector, 0.0));
-
-    glm::vec3 velocity = rotatedInputVector * speed;
-    cameraPosition += velocity;
+    mainCamera->moveLocal(inputVector * speed);
 
     squareShader.use();
-    squareShader.setMat4("view", getViewMatrix());
-    squareShader.setMat4("projection", getProjectionMatrix());
+    squareShader.setMat4("view", mainCamera->getViewMatrix());
+    squareShader.setMat4("projection", mainCamera->getProjectionMatrix());
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, placeholderTexture);
@@ -383,7 +357,8 @@ int main()
     initGLFW();
     squareVAO1 = createSquareVAO();
     squareShader = Shader("D:\\cpp-projects\\learnopenglmath\\learnopenglmath\\Shaders\\square.vert", "D:\\cpp-projects\\learnopenglmath\\learnopenglmath\\Shaders\\square.frag");
-
+    Camera camera = Camera((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
+    mainCamera = &camera;
     placeholderTexture = createTexture("D:\\cpp-projects\\learnopenglmath\\resources\\images\\MainTopGreen.jpg");
 
     while (!glfwWindowShouldClose(window))

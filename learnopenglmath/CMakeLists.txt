@@ -4,7 +4,7 @@
 include_directories(../include/)
 set(HEADERS  ../inc/headerfilename)
 # Add source to this project's executable.
-add_executable (learnopenglmath "learnopenglmath.cpp" "learnopenglmath.h"  "Shader.cpp" "Shader.h" "glad.c" "math_utils.cpp" "math_utils.h")
+add_executable (learnopenglmath "learnopenglmath.cpp" "learnopenglmath.h"  "Shader.cpp" "Shader.h" "glad.c" "math_utils.cpp" "math_utils.h" "camera.cpp" "camera.h" "global_consts.h")
 target_link_libraries(learnopenglmath ${CMAKE_SOURCE_DIR}/lib/glfw3.lib)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
