@@ -16,13 +16,15 @@
 #include <glm/vec3.hpp>
 #include "Shader.h"
 #include "math_utils.h"
-#include "camera.h";
+#include "camera.h"
+#include "texture.h"
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 int frameIndex = 0;
 GLFWwindow* window;
-Camera* mainCamera;
+std::unique_ptr<Camera> mainCamera;
+std::unique_ptr<Texture> placeholderTexture;
 
 glm::vec2 horizontalInput;
 float verticalInput;
@@ -71,8 +73,6 @@ GLuint cubeIndices[] = {
 
 Shader squareShader;
 GLuint squareVAO1;
-GLuint placeholderTexture;
-
 glm::vec3 cubePositions[] = {
     glm::vec3(0.0f,  0.0f,  0.0f),
     glm::vec3(2.0f,  5.0f, -15.0f),
@@ -226,51 +226,6 @@ void initGLFW()
     
 }
 
-GLuint createTexture(std::string path)
-{
-    stbi_set_flip_vertically_on_load(true);
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
-
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    GLenum format = 0;
-    GLint internalFormat = 0;
-    switch (nrChannels) 
-    {
-        case 1:
-            format = GL_RED;
-            internalFormat = GL_RED;
-            break;
-        case 2:
-            format = GL_RG;
-            internalFormat = GL_RG;
-            break;
-        case 3:
-            format = GL_RGB;
-            internalFormat = GL_RGB;
-            break;
-        case 4:
-            format = GL_RGBA;
-            internalFormat = GL_RGBA;
-            break;
-    }
-
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    return texture;
-}
-
 void update()
 {
     int width, height;
@@ -291,8 +246,7 @@ void update()
     squareShader.setMat4("view", mainCamera->getViewMatrix());
     squareShader.setMat4("projection", mainCamera->getProjectionMatrix());
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, placeholderTexture);
+    placeholderTexture->bind();
     squareShader.setInt("imageTex", 0);
 
 
@@ -357,9 +311,9 @@ int main()
     initGLFW();
     squareVAO1 = createSquareVAO();
     squareShader = Shader("D:\\cpp-projects\\learnopenglmath\\learnopenglmath\\Shaders\\square.vert", "D:\\cpp-projects\\learnopenglmath\\learnopenglmath\\Shaders\\square.frag");
-    Camera camera = Camera((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
-    mainCamera = &camera;
-    placeholderTexture = createTexture("D:\\cpp-projects\\learnopenglmath\\resources\\images\\MainTopGreen.jpg");
+    mainCamera = std::unique_ptr<Camera>(new Camera((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+    placeholderTexture = std::unique_ptr<Texture>(new Texture(GL_TEXTURE1, GL_TEXTURE_2D));
+    placeholderTexture->setImage2D("D:\\cpp-projects\\learnopenglmath\\resources\\images\\MainTopGreen.jpg");
 
     while (!glfwWindowShouldClose(window))
     {

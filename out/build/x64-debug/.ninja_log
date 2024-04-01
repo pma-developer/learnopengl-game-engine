@@ -1,12 +1,14 @@
 # ninja log v5
 15	672	7325672243169830	learnopenglmath/CMakeFiles/learnopenglmath.dir/Shader.cpp.obj	35e2994bb681d448
-10	1229	7334302820666980	learnopenglmath/CMakeFiles/learnopenglmath.dir/learnopenglmath.cpp.obj	ddeae16515f31955
-1229	1424	7334302822303647	learnopenglmath/learnopenglmath.exe	187dbeb694183037
-19	370	7334155404943984	learnopenglmath/CMakeFiles/learnopenglmath.dir/math_utils.cpp.obj	aba1dd3e5a06920a
-20	818	7325672244625631	learnopenglmath/CMakeFiles/learnopenglmath.dir/glad.c.obj	a6220519c2a6a64
-10	149	7335991738746586	build.ninja	78788c1560cacf53
-35	1052	7336016099646657	learnopenglmath/CMakeFiles/learnopenglmath.dir/camera.cpp.obj	9afae4bfa0e51081
-2	1451	7336018753955380	learnopenglmath/CMakeFiles/learnopenglmath.dir/learnopenglmath.cpp.obj	ddeae16515f31955
-1452	1744	7336018756221896	learnopenglmath/learnopenglmath.exe	74baeae4692c9b62
 11	1331	7336019400516697	learnopenglmath/CMakeFiles/learnopenglmath.dir/learnopenglmath.cpp.obj	ddeae16515f31955
 1331	1485	7336019401739139	learnopenglmath/learnopenglmath.exe	74baeae4692c9b62
+19	370	7334155404943984	learnopenglmath/CMakeFiles/learnopenglmath.dir/math_utils.cpp.obj	aba1dd3e5a06920a
+20	818	7325672244625631	learnopenglmath/CMakeFiles/learnopenglmath.dir/glad.c.obj	a6220519c2a6a64
+10	149	7336691731278081	build.ninja	78788c1560cacf53
+35	1052	7336016099646657	learnopenglmath/CMakeFiles/learnopenglmath.dir/camera.cpp.obj	9afae4bfa0e51081
+31	1081	7336802573375879	learnopenglmath/CMakeFiles/learnopenglmath.dir/camera.cpp.obj	9afae4bfa0e51081
+35	1109	7336802573668059	learnopenglmath/CMakeFiles/learnopenglmath.dir/texture.cpp.obj	e52cd2c0520e148
+26	1582	7336802578391495	learnopenglmath/CMakeFiles/learnopenglmath.dir/Shader.cpp.obj	35e2994bb681d448
+11	1345	7336802795161492	learnopenglmath/CMakeFiles/learnopenglmath.dir/learnopenglmath.cpp.obj	ddeae16515f31955
+1346	1598	7336802797024234	learnopenglmath/learnopenglmath.exe	52a76c4cba8888d6
+17	1108	7336836190188857	learnopenglmath/CMakeFiles/learnopenglmath.dir/texture.cpp.obj	e52cd2c0520e148

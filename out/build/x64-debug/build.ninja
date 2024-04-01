@@ -117,6 +117,14 @@ build learnopenglmath\CMakeFiles\learnopenglmath.dir\camera.cpp.obj: CXX_COMPILE
   TARGET_COMPILE_PDB = learnopenglmath\CMakeFiles\learnopenglmath.dir\
   TARGET_PDB = learnopenglmath\learnopenglmath.pdb
 
+build learnopenglmath\CMakeFiles\learnopenglmath.dir\texture.cpp.obj: CXX_COMPILER__learnopenglmath_unscanned_Debug D$:\cpp-projects\learnopenglmath\learnopenglmath\texture.cpp || cmake_object_order_depends_target_learnopenglmath
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -std:c++20 -ZI
+  INCLUDES = -ID:\cpp-projects\learnopenglmath\learnopenglmath\..\include
+  OBJECT_DIR = learnopenglmath\CMakeFiles\learnopenglmath.dir
+  OBJECT_FILE_DIR = learnopenglmath\CMakeFiles\learnopenglmath.dir
+  TARGET_COMPILE_PDB = learnopenglmath\CMakeFiles\learnopenglmath.dir\
+  TARGET_PDB = learnopenglmath\learnopenglmath.pdb
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target learnopenglmath
@@ -125,7 +133,7 @@ build learnopenglmath\CMakeFiles\learnopenglmath.dir\camera.cpp.obj: CXX_COMPILE
 #############################################
 # Link the executable learnopenglmath\learnopenglmath.exe
 
-build learnopenglmath\learnopenglmath.exe: CXX_EXECUTABLE_LINKER__learnopenglmath_Debug learnopenglmath\CMakeFiles\learnopenglmath.dir\learnopenglmath.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\Shader.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\glad.c.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\math_utils.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\camera.cpp.obj | D$:\cpp-projects\learnopenglmath\lib\glfw3.lib
+build learnopenglmath\learnopenglmath.exe: CXX_EXECUTABLE_LINKER__learnopenglmath_Debug learnopenglmath\CMakeFiles\learnopenglmath.dir\learnopenglmath.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\Shader.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\glad.c.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\math_utils.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\camera.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\texture.cpp.obj | D$:\cpp-projects\learnopenglmath\lib\glfw3.lib
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -ZI
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
   LINK_LIBRARIES = D:\cpp-projects\learnopenglmath\lib\glfw3.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib

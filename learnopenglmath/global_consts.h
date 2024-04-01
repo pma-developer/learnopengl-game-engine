@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 
 const glm::vec3 AXIS_UP(0, 1, 0);
