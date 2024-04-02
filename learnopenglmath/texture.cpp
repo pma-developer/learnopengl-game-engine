@@ -1,10 +1,11 @@
 
 #include <iostream>
 #include <string>
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "texture.h"
 
-Texture::Texture(GLuint textureUnit, GLuint textureType) : textureUnit(textureUnit), textureType(textureType)
+Texture::Texture(GLenum textureUnit, GLenum textureType) : textureUnit(textureUnit), textureType(textureType)
 {
     textureId = genTexture();
 }
@@ -58,8 +59,8 @@ void Texture::setImageData(int width, int height, int nrChannels, unsigned char*
     GLenum format = 0;
     GLint internalFormat = 0;
 
-    GLint currentActiveTexture;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, &currentActiveTexture);
+    //GLint currentActiveTexture;
+    //glGetIntegerv(GL_ACTIVE_TEXTURE, &currentActiveTexture);
 
     glActiveTexture(textureUnit);
     glBindTexture(textureType, textureId);

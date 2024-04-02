@@ -7,9 +7,6 @@
 #include <glad/glad.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -196,6 +193,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 #pragma endregion
 
+void APIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+    std::cerr << "GL Callback: " << (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "") << "type = " << type << ", severity = " << severity << ", message = " << message << "\n";
+}
+
 void initGLFW()
 {
     if (!glfwInit())
@@ -223,7 +224,8 @@ void initGLFW()
     glfwSwapInterval(1);
 
     glEnable(GL_DEPTH_TEST);
-    
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(debugCallback, nullptr);
 }
 
 void update()
@@ -247,7 +249,7 @@ void update()
     squareShader.setMat4("projection", mainCamera->getProjectionMatrix());
 
     placeholderTexture->bind();
-    squareShader.setInt("imageTex", 0);
+    squareShader.setInt("imageTex", 1);
 
 
     for (int i = 0; i < std::size(cubePositions); i++)
@@ -274,8 +276,6 @@ void update()
     glm::vec2 newCursorPos = cursorPosition;
 
     cursorDelta = newCursorPos - oldCursorPos;
-
-
 
     frameIndex++;
 }
@@ -313,7 +313,7 @@ int main()
     squareShader = Shader("D:\\cpp-projects\\learnopenglmath\\learnopenglmath\\Shaders\\square.vert", "D:\\cpp-projects\\learnopenglmath\\learnopenglmath\\Shaders\\square.frag");
     mainCamera = std::unique_ptr<Camera>(new Camera((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
     placeholderTexture = std::unique_ptr<Texture>(new Texture(GL_TEXTURE1, GL_TEXTURE_2D));
-    placeholderTexture->setImage2D("D:\\cpp-projects\\learnopenglmath\\resources\\images\\MainTopGreen.jpg");
+    placeholderTexture->setImage2DFromFile("D:\\cpp-projects\\learnopenglmath\\resources\\images\\MainTopGreen.jpg");
 
     while (!glfwWindowShouldClose(window))
     {
