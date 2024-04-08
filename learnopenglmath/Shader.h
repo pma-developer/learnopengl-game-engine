@@ -27,6 +27,7 @@ public:
     void setFloat(const std::string& name, float value) const;
     void setVec4(const std::string& name, float v0, float v1, float v2, float v3) const;
     void setVec3(const std::string& name, float v0, float v1, float v2) const;
+    void setVec3(const std::string& name, glm::vec3 v) const;
     void setVec2(const std::string& name, float v0, float v1) const;
     void setBoolArray(const std::string& name, GLsizei size, bool* value) const;
     void setMat4(const std::string& name, glm::mat4 value) const;

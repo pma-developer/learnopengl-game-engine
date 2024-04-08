@@ -32,8 +32,14 @@ float speed = 0.05f;
 glm::vec2 cursorPosition;
 glm::vec2 cursorDelta;
 float rotationSensitivity = 0.1f;
+glm::vec3 lightSourcePos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
 bool mmbPressed = false;
+
+Shader cubeShader;
+Shader lightSourceShader;
+GLuint cubeVAO;
 
 float vertices[] = {
     -0.5,  0.5, 0,  0.0, 1.0, // left top
@@ -47,31 +53,54 @@ GLuint indices[] = {
     2, 3, 1
 };
 
-float cubeVertices[] = {
-   -0.5,  0.5, -0.5,  0.0, 1.0, // left top back   0
-    0.5,  0.5, -0.5,  1.0, 1.0, // right top back  1
-   -0.5, -0.5, -0.5,  0.0, 0.0, // left bot back   2
-    0.5, -0.5, -0.5,  1.0, 0.0, // right bot back  3
 
-   -0.5,  0.5,  0.5,  0.0, 1.0, // left top front  4
-    0.5,  0.5,  0.5,  1.0, 1.0, // right top front 5
-   -0.5, -0.5,  0.5,  0.0, 0.0, // left bot front  6
-    0.5, -0.5,  0.5,  1.0, 0.0  // right bot front 7
+//done : left top back right bot
+float cubeVertices[] = {
+    // position       // UV      // face normal
+   -0.5,  0.5, -0.5,  0.0, 1.0,  -1.0,  0.0,  0.0, // left top back   n: left |0
+   -0.5,  0.5, -0.5,  0.0, 1.0,   0.0,  1.0,  0.0, // left top back   n: top  |1
+   -0.5,  0.5, -0.5,  1.0, 1.0,   0.0,  0.0, -1.0, // left top back   n: back |2
+                                                                              
+    0.5,  0.5, -0.5,  1.0, 1.0,   1.0,  0.0,  0.0, // right top back  n: right|3
+    0.5,  0.5, -0.5,  1.0, 1.0,   0.0,  1.0,  0.0, // right top back  n: top  |4
+    0.5,  0.5, -0.5,  0.0, 1.0,   0.0,  0.0, -1.0, // right top back  n: back |5
+                                                                              
+   -0.5, -0.5, -0.5,  0.0, 0.0,  -1.0,  0.0,  0.0, // left bot back   n: left |6
+   -0.5, -0.5, -0.5,  0.0, 0.0,   0.0, -1.0,  0.0, // left bot back   n: bot  |7
+   -0.5, -0.5, -0.5,  1.0, 0.0,   0.0,  0.0, -1.0, // left bot back   n: back |8
+                                                                              
+    0.5, -0.5, -0.5,  1.0, 0.0,   1.0,  0.0,  0.0, // right bot back  n: right|9
+    0.5, -0.5, -0.5,  1.0, 0.0,   0.0, -1.0,  0.0, // right bot back  n: bot  |10
+    0.5, -0.5, -0.5,  0.0, 0.0,   0.0,  0.0, -1.0, // right bot back  n: back |11
+                                                                              
+   -0.5,  0.5,  0.5,  1.0, 1.0,  -1.0,  0.0,  0.0, // left top front  n: left |12
+   -0.5,  0.5,  0.5,  0.0, 0.0,   0.0,  1.0,  0.0, // left top front  n: top  |13
+   -0.5,  0.5,  0.5,  0.0, 1.0,   0.0,  0.0,  1.0, // left top front  n: front|14
+
+    0.5,  0.5,  0.5,  0.0, 1.0,   1.0,  0.0,  0.0, // right top front n: right|15
+    0.5,  0.5,  0.5,  1.0, 0.0,   0.0,  1.0,  0.0, // right top front n: top  |16
+    0.5,  0.5,  0.5,  1.0, 1.0,   0.0,  0.0,  1.0, // right top front n: front|17
+   
+   -0.5, -0.5,  0.5,  1.0, 0.0,  -1.0,  0.0,  0.0, // left bot front  n: left |18
+   -0.5, -0.5,  0.5,  0.0, 1.0,   0.0, -1.0,  0.0, // left bot front  n: bot  |19
+   -0.5, -0.5,  0.5,  0.0, 0.0,   0.0,  0.0,  1.0, // left bot front  n: front|20
+   
+    0.5, -0.5,  0.5,  0.0, 0.0,   1.0,  0.0,  0.0, // right bot front n: right|21
+    0.5, -0.5,  0.5,  1.0, 1.0,   0.0, -1.0,  0.0, // right bot front n: bot  |22
+    0.5, -0.5,  0.5,  1.0, 0.0,   0.0,  0.0,  1.0, // right bot front n: front|23
 };
 
 GLuint cubeIndices[] = {
-    0, 5, 4,  0, 5, 1, // top
-    4, 7, 5,  4, 7, 6, // front
-    2, 7, 6,  2, 7, 3, // bot
-    0, 3, 2,  0, 3, 1, // back
-    3, 5, 7,  3, 5, 1, // right
-    2, 4, 6,  2, 4, 0  // left
+    13, 1 ,  4 ,  4 , 16, 13, // top
+    20, 14,  17,  17, 23, 20, // front
+    7 , 19,  22,  22, 10, 7 , // bot
+    11, 5 ,  2 ,  2 , 8 , 11, // back
+    21, 15,  3 ,  3 , 9 , 21, // right
+    6 , 18,  12,  12, 0 , 6 , // left
 };
 
-Shader squareShader;
-GLuint squareVAO1;
 glm::vec3 cubePositions[] = {
-    glm::vec3(0.0f,  0.0f,  0.0f),
+    glm::vec3(1.0f,  -1.0f,  2.0f),
     glm::vec3(2.0f,  5.0f, -15.0f),
     glm::vec3(-1.5f, -2.2f, -2.5f),
     glm::vec3(-3.8f, -2.0f, -12.3f),
@@ -84,15 +113,6 @@ glm::vec3 cubePositions[] = {
 };
 
 
-glm::mat4 getTransformationMatrix()
-{
-    glm::mat4 trans = glm::mat4(1.);
-    auto currentTime = (float)glfwGetTime();
-    //trans = glm::translate(trans, sin(currentTime) * glm::vec3(1, 0, 0));
-    trans = glm::rotate(trans, currentTime, glm::vec3(0, 0, 1));
-
-    return trans;
-}
 glm::mat4 getModelMatrix()
 {
     glm::mat4 model = glm::mat4(1.0f);
@@ -236,7 +256,7 @@ void update()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0, 0.1, 0.2, 1);
 
-    glBindVertexArray(squareVAO1);
+    glBindVertexArray(cubeVAO);
 
     if (mmbPressed)
     {
@@ -244,13 +264,13 @@ void update()
     }
     mainCamera->moveLocal(inputVector * speed);
 
-    squareShader.use();
-    squareShader.setMat4("view", mainCamera->getViewMatrix());
-    squareShader.setMat4("projection", mainCamera->getProjectionMatrix());
-
+    cubeShader.use();
+    cubeShader.setMat4("view", mainCamera->getViewMatrix());
+    cubeShader.setMat4("projection", mainCamera->getProjectionMatrix());
     placeholderTexture->bind();
-    squareShader.setInt("imageTex", 1);
-
+    cubeShader.setInt("imageTex", 1);
+    cubeShader.setVec3("objectColor", 1.0f, 1.f, 1.f);
+    cubeShader.setVec3("lightColor", lightColor);
 
     for (int i = 0; i < std::size(cubePositions); i++)
     {
@@ -264,10 +284,24 @@ void update()
         {
             model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0, 1, 0));
         }
-        squareShader.setMat4("model", model);
+        cubeShader.setMat4("model", model);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
     }
     glBindVertexArray(0);
+
+
+    glm::mat4 model = glm::translate(glm::mat4(1.), glm::vec3(0,0,0));
+    model = glm::translate(model, lightSourcePos);
+    model = glm::scale(model, glm::vec3(0.2f));
+    glBindVertexArray(cubeVAO);
+    lightSourceShader.use();
+    lightSourceShader.setMat4("view", mainCamera->getViewMatrix());
+    lightSourceShader.setMat4("projection", mainCamera->getProjectionMatrix());
+    lightSourceShader.setVec3("lightColor", lightColor);
+    lightSourceShader.setMat4("model", model);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+    glBindVertexArray(0);
+
 
     glfwSwapBuffers(window);
 
@@ -280,7 +314,34 @@ void update()
     frameIndex++;
 }
 
-GLuint createSquareVAO()
+GLuint createLightSourceVAO()
+{
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+    glBindVertexArray(0);
+
+    return vao;
+}
+
+GLuint createCubeVAO()
 {
 
     GLuint vao;
@@ -298,9 +359,11 @@ GLuint createSquareVAO()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
     glBindVertexArray(0);
 
     return vao;
@@ -309,9 +372,12 @@ GLuint createSquareVAO()
 int main()
 {
     initGLFW();
-    squareVAO1 = createSquareVAO();
-    squareShader = Shader("D:\\cpp-projects\\learnopenglmath\\learnopenglmath\\Shaders\\square.vert", "D:\\cpp-projects\\learnopenglmath\\learnopenglmath\\Shaders\\square.frag");
+    cubeVAO = createCubeVAO();
+
+    cubeShader = Shader(PROJECT_SRC + "\\Shaders\\square.vert", PROJECT_SRC + "\\Shaders\\square.frag");
+    lightSourceShader = Shader(PROJECT_SRC + "\\Shaders\\light_source.vert", PROJECT_SRC + "\\Shaders\\light_source.frag");
     mainCamera = std::unique_ptr<Camera>(new Camera((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+    
     placeholderTexture = std::unique_ptr<Texture>(new Texture(GL_TEXTURE1, GL_TEXTURE_2D));
     placeholderTexture->setImage2DFromFile("D:\\cpp-projects\\learnopenglmath\\resources\\images\\MainTopGreen.jpg");
 
