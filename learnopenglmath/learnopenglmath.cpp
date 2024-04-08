@@ -2,6 +2,7 @@
 //
 
 #include <iostream>
+#include <map>
 #include "learnopenglmath.h" 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/glad.h>
@@ -54,7 +55,6 @@ GLuint indices[] = {
 };
 
 
-//done : left top back right bot
 float cubeVertices[] = {
     // position       // UV      // face normal
    -0.5,  0.5, -0.5,  0.0, 1.0,  -1.0,  0.0,  0.0, // left top back   n: left |0
@@ -112,6 +112,7 @@ glm::vec3 cubePositions[] = {
     glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
+std::map<std::string, int> logsDict;
 
 glm::mat4 getModelMatrix()
 {
@@ -214,7 +215,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 #pragma endregion
 
 void APIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
-    std::cerr << "GL Callback: " << (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "") << "type = " << type << ", severity = " << severity << ", message = " << message << "\n";
+
+    std::string logText = "GL Callback: " + std::string(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "")
+        + "type = " + std::to_string(type)
+        + ", severity = " + std::to_string(severity)
+        + ", message = " + message;
+    if (logsDict.contains(logText))
+    {
+        logsDict[logText]++;
+    }
+    else
+    {
+        logsDict[logText] = 1;
+        std::cerr << logText << "\n";
+    
+    }
 }
 
 void initGLFW()
@@ -269,8 +284,10 @@ void update()
     cubeShader.setMat4("projection", mainCamera->getProjectionMatrix());
     placeholderTexture->bind();
     cubeShader.setInt("imageTex", 1);
-    cubeShader.setVec3("objectColor", 1.0f, 1.f, 1.f);
+    cubeShader.setVec3("objectColor", 1.f, 1.f, 1.f);
     cubeShader.setVec3("lightColor", lightColor);
+    cubeShader.setVec3("lightPos", lightSourcePos);
+    cubeShader.setVec3("viewPos", mainCamera->cameraPosition);
 
     for (int i = 0; i < std::size(cubePositions); i++)
     {

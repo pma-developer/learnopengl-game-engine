@@ -21,9 +21,10 @@ public:
     void rotate(const glm::vec2& rotationYX);
     void moveLocal(const glm::vec3& inputVelocity);
 
-private:
     glm::vec3 cameraPosition;
     glm::vec2 cameraOrientation;
+
+private:
     float fovY;
     float aspectRatio;
     float nearClip;
