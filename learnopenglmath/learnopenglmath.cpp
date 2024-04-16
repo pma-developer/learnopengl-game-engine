@@ -16,10 +16,14 @@
 #include "math_utils.h"
 #include "camera.h"
 #include "texture.h"
+#include "models.h"
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 int frameIndex = 0;
+float startFrameTime = 0.;
+float deltaTime = 0.;
+float averageFPS = 0.;
 GLFWwindow* window;
 std::unique_ptr<Camera> mainCamera;
 std::unique_ptr<Texture> placeholderTexture;
@@ -33,71 +37,18 @@ float speed = 0.05f;
 glm::vec2 cursorPosition;
 glm::vec2 cursorDelta;
 float rotationSensitivity = 0.1f;
-glm::vec3 lightSourcePos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightSourcePos(0.0f, 1.0f, 3.0f);
 glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+
+glm::vec3 cubePosTest = glm::vec3(0.0, 0.0, -2.0);
+glm::vec3 cubeColorTest = glm::vec3(1.0, 1.0, 1.0);
 
 bool mmbPressed = false;
 
 Shader cubeShader;
+Shader cubeShaderTest;
 Shader lightSourceShader;
 GLuint cubeVAO;
-
-float vertices[] = {
-    -0.5,  0.5, 0,  0.0, 1.0, // left top
-     0.5,  0.5, 0,  1.0, 1.0, // right top
-    -0.5, -0.5, 0,  0.0, 0.0, // left bottom
-     0.5, -0.5, 0,  1.0, 0.0  // right bottom
-};
-
-GLuint indices[] = {
-    0, 1, 2,
-    2, 3, 1
-};
-
-
-float cubeVertices[] = {
-    // position       // UV      // face normal
-   -0.5,  0.5, -0.5,  0.0, 1.0,  -1.0,  0.0,  0.0, // left top back   n: left |0
-   -0.5,  0.5, -0.5,  0.0, 1.0,   0.0,  1.0,  0.0, // left top back   n: top  |1
-   -0.5,  0.5, -0.5,  1.0, 1.0,   0.0,  0.0, -1.0, // left top back   n: back |2
-                                                                              
-    0.5,  0.5, -0.5,  1.0, 1.0,   1.0,  0.0,  0.0, // right top back  n: right|3
-    0.5,  0.5, -0.5,  1.0, 1.0,   0.0,  1.0,  0.0, // right top back  n: top  |4
-    0.5,  0.5, -0.5,  0.0, 1.0,   0.0,  0.0, -1.0, // right top back  n: back |5
-                                                                              
-   -0.5, -0.5, -0.5,  0.0, 0.0,  -1.0,  0.0,  0.0, // left bot back   n: left |6
-   -0.5, -0.5, -0.5,  0.0, 0.0,   0.0, -1.0,  0.0, // left bot back   n: bot  |7
-   -0.5, -0.5, -0.5,  1.0, 0.0,   0.0,  0.0, -1.0, // left bot back   n: back |8
-                                                                              
-    0.5, -0.5, -0.5,  1.0, 0.0,   1.0,  0.0,  0.0, // right bot back  n: right|9
-    0.5, -0.5, -0.5,  1.0, 0.0,   0.0, -1.0,  0.0, // right bot back  n: bot  |10
-    0.5, -0.5, -0.5,  0.0, 0.0,   0.0,  0.0, -1.0, // right bot back  n: back |11
-                                                                              
-   -0.5,  0.5,  0.5,  1.0, 1.0,  -1.0,  0.0,  0.0, // left top front  n: left |12
-   -0.5,  0.5,  0.5,  0.0, 0.0,   0.0,  1.0,  0.0, // left top front  n: top  |13
-   -0.5,  0.5,  0.5,  0.0, 1.0,   0.0,  0.0,  1.0, // left top front  n: front|14
-
-    0.5,  0.5,  0.5,  0.0, 1.0,   1.0,  0.0,  0.0, // right top front n: right|15
-    0.5,  0.5,  0.5,  1.0, 0.0,   0.0,  1.0,  0.0, // right top front n: top  |16
-    0.5,  0.5,  0.5,  1.0, 1.0,   0.0,  0.0,  1.0, // right top front n: front|17
-   
-   -0.5, -0.5,  0.5,  1.0, 0.0,  -1.0,  0.0,  0.0, // left bot front  n: left |18
-   -0.5, -0.5,  0.5,  0.0, 1.0,   0.0, -1.0,  0.0, // left bot front  n: bot  |19
-   -0.5, -0.5,  0.5,  0.0, 0.0,   0.0,  0.0,  1.0, // left bot front  n: front|20
-   
-    0.5, -0.5,  0.5,  0.0, 0.0,   1.0,  0.0,  0.0, // right bot front n: right|21
-    0.5, -0.5,  0.5,  1.0, 1.0,   0.0, -1.0,  0.0, // right bot front n: bot  |22
-    0.5, -0.5,  0.5,  1.0, 0.0,   0.0,  0.0,  1.0, // right bot front n: front|23
-};
-
-GLuint cubeIndices[] = {
-    13, 1 ,  4 ,  4 , 16, 13, // top
-    20, 14,  17,  17, 23, 20, // front
-    7 , 19,  22,  22, 10, 7 , // bot
-    11, 5 ,  2 ,  2 , 8 , 11, // back
-    21, 15,  3 ,  3 , 9 , 21, // right
-    6 , 18,  12,  12, 0 , 6 , // left
-};
 
 glm::vec3 cubePositions[] = {
     glm::vec3(1.0f,  -1.0f,  2.0f),
@@ -263,22 +214,11 @@ void initGLFW()
     glDebugMessageCallback(debugCallback, nullptr);
 }
 
-void update()
+void drawFrame()
 {
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0, 0.1, 0.2, 1);
-
+    lightSourcePos.x += sin(glfwGetTime()) / 15;
+    lightSourcePos.z += cos(glfwGetTime()) / 15;
     glBindVertexArray(cubeVAO);
-
-    if (mmbPressed)
-    {
-        mainCamera->rotate(cursorDelta*rotationSensitivity);
-    }
-    mainCamera->moveLocal(inputVector * speed);
-
     cubeShader.use();
     cubeShader.setMat4("view", mainCamera->getViewMatrix());
     cubeShader.setMat4("projection", mainCamera->getProjectionMatrix());
@@ -307,7 +247,7 @@ void update()
     glBindVertexArray(0);
 
 
-    glm::mat4 model = glm::translate(glm::mat4(1.), glm::vec3(0,0,0));
+    glm::mat4 model = glm::translate(glm::mat4(1.), glm::vec3(0, 0, 0));
     model = glm::translate(model, lightSourcePos);
     model = glm::scale(model, glm::vec3(0.2f));
     glBindVertexArray(cubeVAO);
@@ -318,7 +258,55 @@ void update()
     lightSourceShader.setMat4("model", model);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
     glBindVertexArray(0);
+}
 
+void drawFrameTest()
+{
+    glBindVertexArray(cubeVAO);
+    cubePosTest.x = sin(glm::radians(startFrameTime * 20))*3;
+
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), cubePosTest);
+    cubeShaderTest.use();
+    cubeShaderTest.setMat4("view", mainCamera->getViewMatrix());
+    cubeShaderTest.setMat4("projection", mainCamera->getProjectionMatrix());
+    cubeShaderTest.setVec3("lightColor", lightColor);
+    cubeShaderTest.setMat4("model", model);
+    cubeShaderTest.setVec3("objectColor", cubeColorTest);
+    cubeShaderTest.setVec3("lightPos", lightSourcePos);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+
+    lightSourceShader.use();
+    lightSourceShader.setMat4("view", mainCamera->getViewMatrix());
+    lightSourceShader.setMat4("projection", mainCamera->getProjectionMatrix());
+    lightSourceShader.setVec3("lightColor", lightColor);
+    model = glm::translate(glm::mat4(1.f), lightSourcePos);
+    lightSourceShader.setMat4("model", model);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+    glBindVertexArray(0);
+}
+
+void update()
+{
+    auto now = glfwGetTime();
+    deltaTime = now - startFrameTime;
+    startFrameTime = now;
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0, 0.1, 0.2, 1);
+
+
+    if (mmbPressed)
+    {
+        mainCamera->rotate(cursorDelta*rotationSensitivity);
+    }
+    mainCamera->moveLocal(inputVector * speed);
+
+
+    drawFrameTest();
+    //drawFrame();
 
     glfwSwapBuffers(window);
 
@@ -327,8 +315,9 @@ void update()
     glm::vec2 newCursorPos = cursorPosition;
 
     cursorDelta = newCursorPos - oldCursorPos;
-
+    
     frameIndex++;
+    averageFPS = frameIndex / glfwGetTime();
 }
 
 GLuint createLightSourceVAO()
@@ -392,6 +381,7 @@ int main()
     cubeVAO = createCubeVAO();
 
     cubeShader = Shader(PROJECT_SRC + "\\Shaders\\square.vert", PROJECT_SRC + "\\Shaders\\square.frag");
+    cubeShaderTest = Shader(PROJECT_SRC + "\\Shaders\\cube.vert", PROJECT_SRC + "\\Shaders\\cube.frag");
     lightSourceShader = Shader(PROJECT_SRC + "\\Shaders\\light_source.vert", PROJECT_SRC + "\\Shaders\\light_source.frag");
     mainCamera = std::unique_ptr<Camera>(new Camera((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
     
