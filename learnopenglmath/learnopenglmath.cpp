@@ -12,9 +12,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec3.hpp>
-#include <optional>
-#include <iomanip>
-#include <sstream>
 #include "Shader.h"
 #include "math_utils.h"
 #include "camera.h"
@@ -30,6 +27,8 @@ float averageFPS = 0.;
 GLFWwindow* window;
 std::unique_ptr<Camera> mainCamera;
 std::unique_ptr<Texture> placeholderTexture;
+std::unique_ptr<Texture> sampleDiffuseMap;
+std::unique_ptr<Texture> sampleSpecularMap;
 
 glm::vec2 horizontalInput;
 float verticalInput;
@@ -262,54 +261,29 @@ void drawFrame()
 }
 
 
-template<glm::length_t rows, glm::length_t cols>
-void logMatrix(const glm::mat<rows, cols, glm::f32>& matrix, const std::optional<std::string> name = std::nullopt)
-{
-    std::cout << "Matrix " << name.value_or("") << std::endl;
-
-    int max_width = 0;
-    std::ostringstream stream;
-    for (glm::length_t i = 0; i < rows; i++) {
-        for (glm::length_t j = 0; j < cols; j++) {
-            stream.str("");
-            stream << std::fixed << std::setprecision(2) << matrix[j][i];
-            max_width = std::max(max_width, static_cast<int>(stream.str().find('.')));
-        }
-    }
-
-    for (glm::length_t i = 0; i < rows; i++)
-    {
-        for (glm::length_t j = 0; j < cols; j++)
-        {
-            stream.str("");
-            stream << std::fixed << std::setprecision(2) << matrix[j][i];
-            std::string num = stream.str();
-            int decimal_pos = num.find('.');
-            std::cout << std::string(max_width - decimal_pos, ' ') << num << ", ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << "-----------" << std::endl;
-}
 void drawFrameTest()
 {
     glBindVertexArray(cubeVAO);
     //cubePosTest.x = sin(glm::radians(startFrameTime * 20))*3;
 
+    sampleDiffuseMap->bind();
+    sampleSpecularMap->bind();
+
     glm::mat4 model = glm::translate(glm::mat4(1.0f), cubePosTest);
+
     cubeShaderLitView.use();
     cubeShaderLitView.setMat4("view", mainCamera->getViewMatrix());
     cubeShaderLitView.setMat4("projection", mainCamera->getProjectionMatrix());
     cubeShaderLitView.setVec3("lightColor", lightColor);
     cubeShaderLitView.setMat4("model", model);
     cubeShaderLitView.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-    cubeShaderLitView.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-    cubeShaderLitView.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+    cubeShaderLitView.setInt("material.diffuse", sampleDiffuseMap->getTextureUnit() - GL_TEXTURE0);
+    cubeShaderLitView.setInt("material.specular", sampleSpecularMap->getTextureUnit() - GL_TEXTURE0);
+    cubeShaderLitView.setFloat("material.shininess", 32.0f);
     cubeShaderLitView.setVec3("light.position", lightSourcePos);
     cubeShaderLitView.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
     cubeShaderLitView.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
     cubeShaderLitView.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-    cubeShaderLitView.setFloat("material.shininess", 32.0f);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
 
     lightSourceShader.use();
@@ -423,7 +397,13 @@ int main()
     mainCamera = std::unique_ptr<Camera>(new Camera((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
     
     placeholderTexture = std::unique_ptr<Texture>(new Texture(GL_TEXTURE1, GL_TEXTURE_2D));
-    placeholderTexture->setImage2DFromFile("D:\\cpp-projects\\learnopenglmath\\resources\\images\\MainTopGreen.jpg");
+    placeholderTexture->setImage2DFromFile(PROJECT_ROOT + "\\resources\\images\\MainTopGreen.jpg");
+
+    sampleDiffuseMap = std::unique_ptr<Texture>(new Texture(GL_TEXTURE2, GL_TEXTURE_2D));
+    sampleDiffuseMap->setImage2DFromFile(PROJECT_ROOT + "\\resources\\images\\container2.png");
+
+    sampleSpecularMap = std::unique_ptr<Texture>(new Texture(GL_TEXTURE3, GL_TEXTURE_2D));
+    sampleSpecularMap->setImage2DFromFile(PROJECT_ROOT + "\\resources\\images\\container2_specular.png");
 
     while (!glfwWindowShouldClose(window))
     {

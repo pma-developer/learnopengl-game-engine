@@ -4,9 +4,8 @@ layout (location = 0) out vec4 fragColor;
 
 struct Material
 {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    sampler2D diffuse;
+	sampler2D specular;
     float shininess;
 }; 
 
@@ -44,9 +43,9 @@ vec3 getPhongLightingColor()
 	vec3 reflected = reflect(-lightDirection, norm);
 	float spec = pow(max(dot(normalize(-viewFragPos), reflected), 0), material.shininess);
 
-	vec3 diffuse = light.diffuse * material.diffuse * diff;
-	vec3 ambient = light.ambient * material.ambient;
-	vec3 specular = light.specular * material.specular * spec;
+	vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, texUV));
+	vec3 ambient = light.ambient * vec3(texture(material.diffuse, texUV));
+	vec3 specular = light.specular * spec * vec3(texture(material.specular, texUV));
 
 	vec3 resultColor = ambient + diffuse + specular;
 	return resultColor;

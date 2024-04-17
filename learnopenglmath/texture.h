@@ -17,6 +17,7 @@ public:
     ~Texture();
     void bind() const;
     void setImage2DFromFile(std::string path) const;
+    GLenum getTextureUnit() const;
 
 private:
     GLuint genTexture() const;

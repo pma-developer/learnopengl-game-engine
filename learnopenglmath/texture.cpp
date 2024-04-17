@@ -89,3 +89,8 @@ void Texture::setImageData(int width, int height, int nrChannels, unsigned char*
 
     glBindTexture(textureType, 0);
 }
+
+GLenum Texture::getTextureUnit() const
+{
+    return textureUnit;
+}
