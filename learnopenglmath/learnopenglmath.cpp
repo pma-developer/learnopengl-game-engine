@@ -12,6 +12,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec3.hpp>
+#include <optional>
+#include <iomanip>
+#include <sstream>
 #include "Shader.h"
 #include "math_utils.h"
 #include "camera.h"
@@ -41,12 +44,10 @@ glm::vec3 lightSourcePos(0.0f, 1.0f, 3.0f);
 glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
 glm::vec3 cubePosTest = glm::vec3(0.0, 0.0, -2.0);
-glm::vec3 cubeColorTest = glm::vec3(1.0, 1.0, 1.0);
-
 bool mmbPressed = false;
 
 Shader cubeShader;
-Shader cubeShaderTest;
+Shader cubeShaderLitView;
 Shader lightSourceShader;
 GLuint cubeVAO;
 
@@ -260,19 +261,55 @@ void drawFrame()
     glBindVertexArray(0);
 }
 
+
+template<glm::length_t rows, glm::length_t cols>
+void logMatrix(const glm::mat<rows, cols, glm::f32>& matrix, const std::optional<std::string> name = std::nullopt)
+{
+    std::cout << "Matrix " << name.value_or("") << std::endl;
+
+    int max_width = 0;
+    std::ostringstream stream;
+    for (glm::length_t i = 0; i < rows; i++) {
+        for (glm::length_t j = 0; j < cols; j++) {
+            stream.str("");
+            stream << std::fixed << std::setprecision(2) << matrix[j][i];
+            max_width = std::max(max_width, static_cast<int>(stream.str().find('.')));
+        }
+    }
+
+    for (glm::length_t i = 0; i < rows; i++)
+    {
+        for (glm::length_t j = 0; j < cols; j++)
+        {
+            stream.str("");
+            stream << std::fixed << std::setprecision(2) << matrix[j][i];
+            std::string num = stream.str();
+            int decimal_pos = num.find('.');
+            std::cout << std::string(max_width - decimal_pos, ' ') << num << ", ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "-----------" << std::endl;
+}
 void drawFrameTest()
 {
     glBindVertexArray(cubeVAO);
-    cubePosTest.x = sin(glm::radians(startFrameTime * 20))*3;
+    //cubePosTest.x = sin(glm::radians(startFrameTime * 20))*3;
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), cubePosTest);
-    cubeShaderTest.use();
-    cubeShaderTest.setMat4("view", mainCamera->getViewMatrix());
-    cubeShaderTest.setMat4("projection", mainCamera->getProjectionMatrix());
-    cubeShaderTest.setVec3("lightColor", lightColor);
-    cubeShaderTest.setMat4("model", model);
-    cubeShaderTest.setVec3("objectColor", cubeColorTest);
-    cubeShaderTest.setVec3("lightPos", lightSourcePos);
+    cubeShaderLitView.use();
+    cubeShaderLitView.setMat4("view", mainCamera->getViewMatrix());
+    cubeShaderLitView.setMat4("projection", mainCamera->getProjectionMatrix());
+    cubeShaderLitView.setVec3("lightColor", lightColor);
+    cubeShaderLitView.setMat4("model", model);
+    cubeShaderLitView.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+    cubeShaderLitView.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+    cubeShaderLitView.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+    cubeShaderLitView.setVec3("light.position", lightSourcePos);
+    cubeShaderLitView.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+    cubeShaderLitView.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+    cubeShaderLitView.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+    cubeShaderLitView.setFloat("material.shininess", 32.0f);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
 
     lightSourceShader.use();
@@ -380,8 +417,8 @@ int main()
     initGLFW();
     cubeVAO = createCubeVAO();
 
-    cubeShader = Shader(PROJECT_SRC + "\\Shaders\\square.vert", PROJECT_SRC + "\\Shaders\\square.frag");
-    cubeShaderTest = Shader(PROJECT_SRC + "\\Shaders\\cube.vert", PROJECT_SRC + "\\Shaders\\cube.frag");
+    cubeShader = Shader(PROJECT_SRC + "\\Shaders\\phong_lit_world.vert", PROJECT_SRC + "\\Shaders\\phong_lit_world.frag");
+    cubeShaderLitView = Shader(PROJECT_SRC + "\\Shaders\\phong_lit.vert", PROJECT_SRC + "\\Shaders\\phong_lit.frag");
     lightSourceShader = Shader(PROJECT_SRC + "\\Shaders\\light_source.vert", PROJECT_SRC + "\\Shaders\\light_source.frag");
     mainCamera = std::unique_ptr<Camera>(new Camera((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
     
