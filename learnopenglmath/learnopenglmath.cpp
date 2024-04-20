@@ -39,7 +39,7 @@ float speed = 0.05f;
 glm::vec2 cursorPosition;
 glm::vec2 cursorDelta;
 float rotationSensitivity = 0.1f;
-glm::vec3 lightSourcePos(0.0f, 1.0f, 3.0f);
+glm::vec3 spotlightPos(-1.0f, 0.0f, 4.0f);
 glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
 glm::vec3 cubePosTest = glm::vec3(0.0, 0.0, -2.0);
@@ -61,6 +61,12 @@ glm::vec3 cubePositions[] = {
     glm::vec3(1.5f,  2.0f, -2.5f),
     glm::vec3(1.5f,  0.2f, -1.5f),
     glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+glm::vec3 pointLightPositions[] = {
+    glm::vec3(0.7f,  0.2f,  2.0f),
+    glm::vec3(2.3f, -3.3f, -4.0f),
+    glm::vec3(-4.0f,  2.0f, -12.0f),
+    glm::vec3(0.0f,  0.0f, -3.0f)
 };
 
 std::map<std::string, int> logsDict;
@@ -233,10 +239,20 @@ void drawCubes(const Shader& shader)
     }
 }
 
+void drawLightSource(const Shader& shader, const glm::mat4& model, const glm::vec3& color)
+{
+    shader.use();
+    shader.setMat4("view", mainCamera->getViewMatrix());
+    shader.setMat4("projection", mainCamera->getProjectionMatrix());
+    shader.setVec3("lightColor", color);
+    shader.setMat4("model", model);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+}
+
 void drawFrame()
 {
-    lightSourcePos.x += sin(glfwGetTime()) / 15;
-    lightSourcePos.z += cos(glfwGetTime()) / 15;
+    spotlightPos.x += sin(glfwGetTime()) / 15;
+    spotlightPos.z += cos(glfwGetTime()) / 15;
     glBindVertexArray(cubeVAO);
     cubeShader.use();
     cubeShader.setMat4("view", mainCamera->getViewMatrix());
@@ -245,25 +261,87 @@ void drawFrame()
     cubeShader.setInt("imageTex", 1);
     cubeShader.setVec3("objectColor", 1.f, 1.f, 1.f);
     cubeShader.setVec3("lightColor", lightColor);
-    cubeShader.setVec3("lightPos", lightSourcePos);
+    cubeShader.setVec3("lightPos", spotlightPos);
     cubeShader.setVec3("viewPos", mainCamera->cameraPosition);
     drawCubes(cubeShader);
     glBindVertexArray(0);
 
 
     glm::mat4 model = glm::translate(glm::mat4(1.), glm::vec3(0, 0, 0));
-    model = glm::translate(model, lightSourcePos);
+    model = glm::translate(model, spotlightPos);
     model = glm::scale(model, glm::vec3(0.2f));
     glBindVertexArray(cubeVAO);
-    lightSourceShader.use();
-    lightSourceShader.setMat4("view", mainCamera->getViewMatrix());
-    lightSourceShader.setMat4("projection", mainCamera->getProjectionMatrix());
-    lightSourceShader.setVec3("lightColor", lightColor);
-    lightSourceShader.setMat4("model", model);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+    drawLightSource(lightSourceShader, model, glm::vec3(1,1,1));
     glBindVertexArray(0);
 }
 
+glm::vec3 directionToViewSpace(glm::vec3 vector, glm::mat4 view)
+{
+    return glm::vec3(view * glm::vec4(vector, 0));
+}
+glm::vec3 positionToViewSpace(glm::vec3 vector, glm::mat4 view)
+{
+    return glm::vec3(view * glm::vec4(vector, 1));
+}
+
+void setLightingData(const Shader& litShader)
+{
+
+    cubeShaderLitView.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+    cubeShaderLitView.setInt("material.diffuse", sampleDiffuseMap->getTextureUnit() - GL_TEXTURE0);
+    cubeShaderLitView.setInt("material.specular", sampleSpecularMap->getTextureUnit() - GL_TEXTURE0);
+    cubeShaderLitView.setFloat("material.shininess", 32.0f);
+
+    glm::mat4 view = mainCamera->getViewMatrix();
+    glm::vec3 dirLightDirection = directionToViewSpace(glm::vec3(-0.2f, -1.0f, -0.3f), view);
+    cubeShaderLitView.setVec3("directionLight.direction", dirLightDirection);
+    cubeShaderLitView.setVec3("directionLight.ambient", glm::vec3(0.05f, 0.05f, 0.0f));
+    cubeShaderLitView.setVec3("directionLight.diffuse", glm::vec3(0.0f, 0.4f, 0.0f));
+    cubeShaderLitView.setVec3("directionLight.specular", glm::vec3(0.0f, 0.5f, 0.0f));
+
+    cubeShaderLitView.setVec3("pointLights[0].position", positionToViewSpace(pointLightPositions[0], view));
+    cubeShaderLitView.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+    cubeShaderLitView.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+    cubeShaderLitView.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+    cubeShaderLitView.setFloat("pointLights[0].constant", 1.0f);
+    cubeShaderLitView.setFloat("pointLights[0].linear", 0.09f);
+    cubeShaderLitView.setFloat("pointLights[0].quadratic", 0.032f);
+
+    cubeShaderLitView.setVec3("pointLights[1].position", positionToViewSpace(pointLightPositions[1], view));
+    cubeShaderLitView.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+    cubeShaderLitView.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+    cubeShaderLitView.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+    cubeShaderLitView.setFloat("pointLights[1].constant", 1.0f);
+    cubeShaderLitView.setFloat("pointLights[1].linear", 0.09f);
+    cubeShaderLitView.setFloat("pointLights[1].quadratic", 0.032f);
+
+    cubeShaderLitView.setVec3("pointLights[2].position", positionToViewSpace(pointLightPositions[2], view));
+    cubeShaderLitView.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+    cubeShaderLitView.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+    cubeShaderLitView.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+    cubeShaderLitView.setFloat("pointLights[2].constant", 1.0f);
+    cubeShaderLitView.setFloat("pointLights[2].linear", 0.09f);
+    cubeShaderLitView.setFloat("pointLights[2].quadratic", 0.032f);
+
+    cubeShaderLitView.setVec3("pointLights[3].position", positionToViewSpace(pointLightPositions[3], view));
+    cubeShaderLitView.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+    cubeShaderLitView.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+    cubeShaderLitView.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+    cubeShaderLitView.setFloat("pointLights[3].constant", 1.0f);
+    cubeShaderLitView.setFloat("pointLights[3].linear", 0.09f);
+    cubeShaderLitView.setFloat("pointLights[3].quadratic", 0.032f);
+
+    cubeShaderLitView.setVec3("spotlight.position", positionToViewSpace(spotlightPos, view));
+    cubeShaderLitView.setVec3("spotlight.ambient", glm::vec3(0.));
+    cubeShaderLitView.setVec3("spotlight.diffuse", glm::vec3(0.6, 0., 0.));
+    cubeShaderLitView.setVec3("spotlight.specular", glm::vec3(1., 0., 0.));
+    cubeShaderLitView.setVec3("spotlight.direction", directionToViewSpace(glm::vec3(0.f, 0.f, -1.f), view));
+    cubeShaderLitView.setFloat("spotlight.innerAngle", glm::radians(12.5f));
+    cubeShaderLitView.setFloat("spotlight.outerAngle", glm::radians(17.5f));
+    cubeShaderLitView.setFloat("spotlight.constant", 1.0f);
+    cubeShaderLitView.setFloat("spotlight.linear", 0.09f);
+    cubeShaderLitView.setFloat("spotlight.quadratic", 0.032f);
+}
 
 void drawFrameTest()
 {
@@ -280,34 +358,20 @@ void drawFrameTest()
     cubeShaderLitView.setMat4("projection", mainCamera->getProjectionMatrix());
     cubeShaderLitView.setVec3("lightColor", lightColor);
     cubeShaderLitView.setMat4("model", model);
-    cubeShaderLitView.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-    cubeShaderLitView.setInt("material.diffuse", sampleDiffuseMap->getTextureUnit() - GL_TEXTURE0);
-    cubeShaderLitView.setInt("material.specular", sampleSpecularMap->getTextureUnit() - GL_TEXTURE0);
-    cubeShaderLitView.setFloat("material.shininess", 32.0f);
-    //cubeShaderLitView.setVec4("directionLight.position", 0.f, -1.0f, 0.f, 0.);
-    cubeShaderLitView.setVec3("spotlight.position", lightSourcePos);
-    cubeShaderLitView.setVec3("spotlight.ambient", 0.f, 0.f, 0.f);
-    cubeShaderLitView.setVec3("spotlight.diffuse", 0.6f, 0.6f, 0.6f);
-    cubeShaderLitView.setVec3("spotlight.specular", 1.0f, 1.0f, 1.0f);
-    cubeShaderLitView.setVec3("spotlight.direction", 0.f, 0.f, -1.f);
-    cubeShaderLitView.setFloat("spotlight.innerAngle", glm::radians(30.f));
-    cubeShaderLitView.setFloat("spotlight.outerAngle", glm::radians(45.f));
-    cubeShaderLitView.setFloat("spotlight.constant", 1.0f);
-    cubeShaderLitView.setFloat("spotlight.linear", 0.09f);
-    cubeShaderLitView.setFloat("spotlight.quadratic", 0.032f);
-    //cubeShaderLitView.setFloat("pointLight.constant", 1.0f);
-    //cubeShaderLitView.setFloat("pointLight.linear", 0.09f);
-    //cubeShaderLitView.setFloat("pointLight.quadratic", 0.032f);
+    setLightingData(cubeShaderLitView);
+
     drawCubes(cubeShaderLitView);
 
-    lightSourceShader.use();
-    lightSourceShader.setMat4("view", mainCamera->getViewMatrix());
-    lightSourceShader.setMat4("projection", mainCamera->getProjectionMatrix());
-    lightSourceShader.setVec3("lightColor", lightColor);
-    model = glm::translate(glm::mat4(1.f), lightSourcePos);
-    model = glm::scale(model, glm::vec3(0.2));
-    lightSourceShader.setMat4("model", model);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+    model = glm::translate(glm::mat4(1.f), spotlightPos);
+    model = glm::scale(model, glm::vec3(.3f));
+    drawLightSource(lightSourceShader, model, glm::vec3(1, 0, 0));
+
+    for (int i = 0; i < std::size(pointLightPositions); i++)
+    {
+        model = glm::translate(glm::mat4(1.f), pointLightPositions[i]);
+        model = glm::scale(model, glm::vec3(.3f));
+        drawLightSource(lightSourceShader, model, glm::vec3(1.));
+    }
     glBindVertexArray(0);
 }
 
@@ -321,7 +385,7 @@ void update()
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0, 0.1, 0.2, 1);
+    glClearColor(0.5, 0.5, 0.5, 1);
 
 
     if (mmbPressed)
