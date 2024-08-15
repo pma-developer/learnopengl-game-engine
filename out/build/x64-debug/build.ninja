@@ -133,12 +133,12 @@ build learnopenglmath\CMakeFiles\learnopenglmath.dir\texture.cpp.obj: CXX_COMPIL
 #############################################
 # Link the executable learnopenglmath\learnopenglmath.exe
 
-build learnopenglmath\learnopenglmath.exe: CXX_EXECUTABLE_LINKER__learnopenglmath_Debug learnopenglmath\CMakeFiles\learnopenglmath.dir\learnopenglmath.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\Shader.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\glad.c.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\math_utils.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\camera.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\texture.cpp.obj | D$:\cpp-projects\learnopenglmath\lib\glfw3.lib
+build learnopenglmath\learnopenglmath.exe: CXX_EXECUTABLE_LINKER__learnopenglmath_Debug learnopenglmath\CMakeFiles\learnopenglmath.dir\learnopenglmath.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\Shader.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\glad.c.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\math_utils.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\camera.cpp.obj learnopenglmath\CMakeFiles\learnopenglmath.dir\texture.cpp.obj | D$:\cpp-projects\learnopenglmath\lib\glfw3.lib D$:\cpp-projects\learnopenglmath\lib\debug\assimp-vc143-mtd.lib
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Ob0 /Od /RTC1 -ZI
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
-  LINK_LIBRARIES = D:\cpp-projects\learnopenglmath\lib\glfw3.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+  LINK_LIBRARIES = D:\cpp-projects\learnopenglmath\lib\glfw3.lib  D:\cpp-projects\learnopenglmath\lib\debug\assimp-vc143-mtd.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   OBJECT_DIR = learnopenglmath\CMakeFiles\learnopenglmath.dir
-  POST_BUILD = cd .
+  POST_BUILD = cmd.exe /C "cd /D D:\cpp-projects\learnopenglmath\out\build\x64-debug\learnopenglmath && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy D:/cpp-projects/learnopenglmath/shared-libs/debug/assimp-vc143-mtd.dll D:/cpp-projects/learnopenglmath/out/build/x64-debug/learnopenglmath"
   PRE_LINK = cd .
   TARGET_COMPILE_PDB = learnopenglmath\CMakeFiles\learnopenglmath.dir\
   TARGET_FILE = learnopenglmath\learnopenglmath.exe

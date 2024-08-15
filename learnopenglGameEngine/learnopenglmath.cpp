@@ -17,6 +17,9 @@
 #include "camera.h"
 #include "texture.h"
 #include "models.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
