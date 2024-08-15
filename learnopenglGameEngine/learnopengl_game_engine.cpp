@@ -1,9 +1,9 @@
-﻿// learnopenglmath.cpp : Defines the entry point for the application.
+﻿// learnopengl_game_engine.cpp : Defines the entry point for the application.
 //
 
 #include <iostream>
 #include <map>
-#include "learnopenglmath.h" 
+#include "learnopengl_game_engine.h" 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/glad.h>
 #define GLFW_INCLUDE_NONE

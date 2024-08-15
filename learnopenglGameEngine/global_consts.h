@@ -8,5 +8,5 @@
 const glm::vec3 AXIS_UP(0, 1, 0);
 const glm::vec3 AXIS_FORWARD(0, 0, 1);
 const glm::vec3 AXIS_RIGHT(1, 0, 0);
-const std::string PROJECT_ROOT = "D:\\cpp-projects\\learnopenglmath";
-const std::string PROJECT_SRC = PROJECT_ROOT + "\\learnopenglmath";
+const std::string PROJECT_ROOT = "D:\\cpp-projects\\learnopengl-game-engine";
+const std::string PROJECT_SRC = PROJECT_ROOT + "\\learnopenglGameEngine";
